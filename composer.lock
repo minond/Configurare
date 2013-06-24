@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "9e36eca1126a3ec5ff5bfef36a5ac947",
+    "hash": "dc48418a5145416bc9a6295874d1770b",
     "packages": [
         {
             "name": "minond/cache",
@@ -11,12 +11,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/minond/Cache.git",
-                "reference": "185c8f2e6e771b2cd209ff37aebe622d72119417"
+                "reference": "fb74a14c3e0d697c5dd15cd3c0cd428fd8fc4875"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/minond/Cache/zipball/185c8f2e6e771b2cd209ff37aebe622d72119417",
-                "reference": "185c8f2e6e771b2cd209ff37aebe622d72119417",
+                "url": "https://api.github.com/repos/minond/Cache/zipball/fb74a14c3e0d697c5dd15cd3c0cd428fd8fc4875",
+                "reference": "fb74a14c3e0d697c5dd15cd3c0cd428fd8fc4875",
                 "shasum": ""
             },
             "require": {
@@ -36,7 +36,7 @@
                 }
             ],
             "description": "Cache",
-            "time": "2013-06-18 03:52:03"
+            "time": "2013-06-24 07:09:51"
         },
         {
             "name": "symfony/yaml",
