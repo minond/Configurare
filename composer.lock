@@ -1,0 +1,101 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
+    "hash": "9e36eca1126a3ec5ff5bfef36a5ac947",
+    "packages": [
+        {
+            "name": "minond/cache",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/minond/Cache.git",
+                "reference": "185c8f2e6e771b2cd209ff37aebe622d72119417"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/minond/Cache/zipball/185c8f2e6e771b2cd209ff37aebe622d72119417",
+                "reference": "185c8f2e6e771b2cd209ff37aebe622d72119417",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Efficio": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Marcos Minond",
+                    "email": "minond.marcos@gmail.com"
+                }
+            ],
+            "description": "Cache",
+            "time": "2013-06-18 03:52:03"
+        },
+        {
+            "name": "symfony/yaml",
+            "version": "2.1.x-dev",
+            "target-dir": "Symfony/Component/Yaml",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/Yaml.git",
+                "reference": "v2.1.11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.1.11",
+                "reference": "v2.1.11",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Symfony\\Component\\Yaml": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "http://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Yaml Component",
+            "homepage": "http://symfony.com",
+            "time": "2013-05-10 00:09:46"
+        }
+    ],
+    "packages-dev": [
+
+    ],
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "minond/cache": 20,
+        "symfony/yaml": 20
+    },
+    "platform": [
+
+    ],
+    "platform-dev": [
+
+    ]
+}

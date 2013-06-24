@@ -1,0 +1,12 @@
+{
+    "require": {
+        "minond/cache": "dev-master",
+        "symfony/yaml": "2.1.*@dev"
+    },
+
+	"autoload": {
+		"psr-0": {
+			"Efficio": "src/"
+		}
+	}
+}
