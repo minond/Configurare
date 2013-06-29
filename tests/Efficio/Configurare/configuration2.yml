@@ -1,0 +1,4 @@
+projects:
+  php:
+    php:
+    - { one: true }

@@ -18,6 +18,16 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->conf = new Configuration;
     }
 
+    /**
+     * data provider
+     * supported configuration formats
+     * @return array
+     */
+    public function configurationFormats()
+    {
+        return [ [Configuration::YAML], [Configuration::JSON] ];
+    }
+
     public function testNewConfigurationClassesCanBeCreated()
     {
         $this->assertTrue($this->conf instanceof Configuration);
@@ -86,16 +96,6 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         ], $all);
     }
 
-    /**
-     * data provider
-     * supported configuration formats
-     * @return array
-     */
-    public function configurationFormats()
-    {
-        return [ [Configuration::YAML], [Configuration::JSON] ];
-    }
-
     public function testConfigurationFilesAreCached()
     {
         $cache = new RuntimeCache;
@@ -153,5 +153,57 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->conf->setDirectory(__dir__);
         $this->assertTrue($this->conf->get(
             'configuration2:projects:php:php:0:one'));
+    }
+
+    /**
+     * @dataProvider configurationFormats
+     */
+    public function testSettingValues($format)
+    {
+        $val = mt_rand();
+        $path = 'writetest:one:two:three';
+        $this->conf->setDirectory(__dir__);
+        $this->conf->setFormat($format);
+        $this->assertTrue($this->conf->set($path, $val));
+        $this->assertEquals($val, $this->conf->get($path));
+    }
+
+    public function testSettingValuesUpdatesTheCache()
+    {
+        $val = mt_rand();
+        $path = 'writetest:one:two:three';
+        $cache = new RuntimeCache;
+        $this->conf->setCache($cache);
+        $this->conf->setDirectory(__dir__);
+        $this->conf->set($path, $val);
+        $this->assertEquals([ 'one' => [ 'two' => [ 'three' => $val] ] ],
+            $cache->get('writetest'));
+    }
+
+    /**
+     * @dataProvider configurationFormats
+     */
+    public function testSettingValuesUpdatesTheConfigurationFiles($format)
+    {
+        $val = mt_rand();
+        $path = 'writetest:one:two:three';
+        $cache = new RuntimeCache;
+        $this->conf->setCache($cache);
+        $this->conf->setFormat($format);
+        $this->conf->setDirectory(__dir__);
+        $this->conf->set($path, $val);
+
+        $data = file_get_contents(__dir__ . DIRECTORY_SEPARATOR . 'writetest' . $format);
+        $this->assertTrue(strpos($data, (string) $val) !== false);
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid configuration path: configuration1:invalid
+     */
+    public function testSettingInvalidConfigurationPathsTriggerAnException()
+    {
+        $this->conf->setDirectory(__dir__);
+        $numbers = $this->conf->set('configuration1:invalid', false);
     }
 }

@@ -21,6 +21,12 @@ class Configuration
     const YAML = '.yml';
 
     /**
+     * json decode/encode configuration
+     */
+    const YAML_INLINE_LEVEL = 100;
+    const YAML_INDENT = 2;
+
+    /**
      * configuration path delimeter
      */
     const DELIM = ':';
@@ -87,7 +93,7 @@ class Configuration
     public function load($path)
     {
         $file = $this->getFilePath($path);
-        $hash = self::getFileName($path);
+        $hash = static::getFileName($path);
 
         if ($this->cache && $this->cache->has($hash)) {
             $data = $this->cache->get($hash);
@@ -125,6 +131,41 @@ class Configuration
         }
 
         return $conf;
+    }
+
+    /**
+     * update a configuration value. returns write success
+     * @param string $path
+     * @throws Exception
+     * @return boolean
+     */
+    public function set($path, $value)
+    {
+        $keys = static::getConfPath($path);
+        $hash = static::getFileName($path);
+        $last = count($keys) - 1;
+        $file = $this->getFilePath($path);
+        $conf = $this->load($path);
+        $find =& $conf;
+
+        foreach ($keys as $index => $key) {
+            if (isset($find[ $key ])) {
+                if ($index === $last) {
+                    $find[ $key ] = $value;
+                } else {
+                    $find =& $find[ $key ];
+                }
+            } else {
+                throw new Exception('Invalid configuration path: ' . $path);
+            }
+        }
+
+        // update cache and write to file
+        if ($this->cache) {
+            $this->cache->set($hash, $conf);
+        }
+
+        return file_put_contents($file, $this->encode($conf)) !== false;
     }
 
     /**
@@ -169,7 +210,7 @@ class Configuration
 
             case self::YAML:
             default:
-                $raw = Yaml::dump($obj, 100, 2);
+                $raw = Yaml::dump($obj, self::YAML_INLINE_LEVEL, self::YAML_INDENT);
                 break;
         }
 
