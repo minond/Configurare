@@ -7,10 +7,19 @@ use PHPUnit_Framework_TestCase;
 
 class ConfigurationTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var Configuration
+     */
+    public $conf;
+
+    public function setUp()
+    {
+        $this->conf = new Configuration;
+    }
+
     public function testNewConfigurationClassesCanBeCreated()
     {
-        $conf = new Configuration;
-        $this->assertTrue($conf instanceof Configuration);
+        $this->assertTrue($this->conf instanceof Configuration);
     }
 
     public function testFileNamesCanBeParsedFromConfigurationPath()
@@ -35,5 +44,25 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     {
         $this->assertEquals([],
             Configuration::getConfPath('config/project'));
+    }
+
+    public function testSetFormatsCanBeSetAndRetrieved()
+    {
+        $this->conf->setFormat(Configuration::JSON);
+        $this->assertEquals(Configuration::JSON, $this->conf->getFormat());
+    }
+
+    public function testYamlIsTheDefaultFormat()
+    {
+        $this->assertEquals(Configuration::YAML, $this->conf->getFormat());
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Invalid format: .jsoninvalid, following formats are are supported: .json, .yml
+     */
+    public function testInvalidFormatsThrowException()
+    {
+        $this->conf->setFormat(Configuration::JSON . 'invalid');
     }
 }
