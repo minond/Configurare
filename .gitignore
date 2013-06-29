@@ -1,5 +1,2 @@
 vendor/
 bin/
-
-tests/Efficio/Configurare/writetest.json
-tests/Efficio/Configurare/writetest.yml

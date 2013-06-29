@@ -18,6 +18,21 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->conf = new Configuration;
     }
 
+    public function tearDown()
+    {
+        $path = 'writetest:one:two:three';
+
+        $yaml = new Configuration;
+        $yaml->setFormat(Configuration::YAML);
+        $yaml->setDirectory(__dir__);
+        $yaml->set($path, 1);
+
+        $json = new Configuration;
+        $json->setFormat(Configuration::JSON);
+        $json->setDirectory(__dir__);
+        $json->set($path, 1);
+    }
+
     /**
      * data provider
      * supported configuration formats
