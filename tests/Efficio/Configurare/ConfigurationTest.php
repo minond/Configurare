@@ -3,6 +3,7 @@
 namespace Efficio\Tests\Configurare;
 
 use Efficio\Configurare\Configuration;
+use Efficio\Cache\RuntimeCache;
 use PHPUnit_Framework_TestCase;
 
 class ConfigurationTest extends PHPUnit_Framework_TestCase
@@ -64,5 +65,93 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testInvalidFormatsThrowException()
     {
         $this->conf->setFormat(Configuration::JSON . 'invalid');
+    }
+
+    public function testDirectoryGetterAndSetter()
+    {
+        $this->conf->setDirectory('test');
+        $this->assertEquals('test', $this->conf->getDirectory());
+    }
+
+    /**
+     * @dataProvider configurationFormats
+     */
+    public function testConfigurationFilesCanBeLoaded($format)
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->conf->setFormat($format);
+        $all = $this->conf->load('configuration1');
+        $this->assertEquals([
+            'numbers' => [1, 2, 3]
+        ], $all);
+    }
+
+    /**
+     * data provider
+     * supported configuration formats
+     * @return array
+     */
+    public function configurationFormats()
+    {
+        return [ [Configuration::YAML], [Configuration::JSON] ];
+    }
+
+    public function testConfigurationFilesAreCached()
+    {
+        $cache = new RuntimeCache;
+        $this->conf->setCache($cache);
+        $this->conf->setDirectory(__dir__);
+        $all = $this->conf->load('configuration1');
+        $this->assertEquals($all, $cache->get('configuration1'));
+    }
+
+    public function testConfigurationFilesCanBeReadFromTheCache()
+    {
+        $data = [1, 2, 3];
+        $cache = new RuntimeCache;
+        $cache->set('configuration_not_exists', $data);
+        $this->conf->setCache($cache);
+        $all = $this->conf->load('configuration_not_exists');
+        $this->assertEquals($all, $data);
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid file: /configuration_not_exists.yml
+     */
+    public function testInvalidConfigurationFilesThrowException()
+    {
+        $this->conf->load('configuration_not_exists');
+    }
+
+    public function testIndividualConfigurationValuesCanBeRetrieved()
+    {
+        $this->conf->setDirectory(__dir__);
+        $numbers = $this->conf->get('configuration1:numbers');
+        $this->assertEquals([1, 2, 3], $numbers);
+    }
+
+    public function testIndividualArrayConfigurationValuesCanBeRetrieved()
+    {
+        $this->conf->setDirectory(__dir__);
+        $numbers = $this->conf->get('configuration1:numbers:1');
+        $this->assertEquals(2, $numbers);
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid configuration path: configuration1:invalid
+     */
+    public function testInvalidConfigurationPathsTriggerAnException()
+    {
+        $this->conf->setDirectory(__dir__);
+        $numbers = $this->conf->get('configuration1:invalid');
+    }
+
+    public function testComplexPaths()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->assertTrue($this->conf->get(
+            'configuration2:projects:php:php:0:one'));
     }
 }
