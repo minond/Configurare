@@ -232,7 +232,8 @@ class Configuration
      */
     public static function getFileName($path)
     {
-        return array_shift(explode(self::DELIM, $path, 2));
+        $arr = explode(self::DELIM, $path, 2);
+        return array_shift($arr);
     }
 
     /**
@@ -242,6 +243,7 @@ class Configuration
      */
     public static function getConfPath($path)
     {
-        return array_slice(explode(self::DELIM, $path), 1);
+        $arr = explode(self::DELIM, $path);
+        return array_slice($arr, 1);
     }
 }
