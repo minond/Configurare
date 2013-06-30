@@ -193,9 +193,6 @@ class Configuration
 
     /**
      * encode a configuration object
-     *
-     * TODO remove magic numbers from Yaml::dump call
-     *
      * @param mixed $obj
      * @return string
      */
@@ -205,7 +202,7 @@ class Configuration
 
         switch ($this->format) {
             case self::JSON:
-                $raw = json_encode($obj);
+                $raw = json_encode($obj, JSON_PRETTY_PRINT);
                 break;
 
             case self::YAML:
