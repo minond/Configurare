@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "dc48418a5145416bc9a6295874d1770b",
+    "hash": "962f241b173e22eb01ee9db15eed1dca",
     "packages": [
         {
             "name": "minond/cache",
@@ -92,9 +92,9 @@
         "minond/cache": 20,
         "symfony/yaml": 20
     },
-    "platform": [
-
-    ],
+    "platform": {
+        "php": ">=5.3.0"
+    },
     "platform-dev": [
 
     ]
