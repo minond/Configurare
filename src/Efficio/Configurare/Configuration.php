@@ -32,6 +32,12 @@ class Configuration
     const DELIM = ':';
 
     /**
+     * identifier for environment configuration file. ie. project config:
+     * app.yml, env config overwrite: app.env.yml
+     */
+    const ENV_IDENTIFIER = '.env';
+
+    /**
      * configuration file format
      */
     private $format = self::YAML;
@@ -92,6 +98,7 @@ class Configuration
      */
     public function load($path)
     {
+        $envf = $this->getEnvFilePath($path);
         $file = $this->getFilePath($path);
         $hash = static::getFileName($path);
 
@@ -100,6 +107,12 @@ class Configuration
         } else if (is_readable($file)) {
             $rstr = file_get_contents($file);
             $data = $this->decode($rstr);
+
+            if (file_exists($envf)) {
+                $estr = file_get_contents($envf);
+                $envd = $this->decode($estr);
+                $data = array_replace_recursive($data, $envd);
+            }
         } else {
             throw new Exception('Invalid file: ' . $file);
         }
@@ -223,6 +236,17 @@ class Configuration
     {
         return $this->dir . DIRECTORY_SEPARATOR .
             static::getFileName($path) . $this->format;
+    }
+
+    /**
+     * @see Configuration::getFilePath
+     * @param string $path
+     * @return string
+     */
+    private function getEnvFilePath($path)
+    {
+        return $this->dir . DIRECTORY_SEPARATOR .
+            static::getFileName($path) . self::ENV_IDENTIFIER . $this->format;
     }
 
     /**

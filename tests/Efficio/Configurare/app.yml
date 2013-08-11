@@ -1,0 +1,13 @@
+name: My App
+
+colors:
+  - red
+  - blue
+
+level:
+  one:
+    two:
+      three: true
+      four: true
+      five: true
+      six: true

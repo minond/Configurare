@@ -221,4 +221,30 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->conf->setDirectory(__dir__);
         $numbers = $this->conf->set('configuration1:invalid', false);
     }
+
+    public function testEnvironmentFilesOverwriteBaseConfiguration()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->assertEquals('Your App', $this->conf->get('app:name'));
+        $this->assertFalse($this->conf->get('app:level:one:two:four'));
+    }
+
+    public function testEnvironmentFilesOnlyOverwriteWhatTheySpecify()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->assertEquals(['red', 'blue'], $this->conf->get('app:colors'));
+        $this->assertTrue($this->conf->get('app:level:one:two:three'));
+    }
+
+    public function testEnvironmentFilesCanAddNewItemsAtTheBaseLevel()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->assertEquals('new', $this->conf->get('app:something'));
+    }
+
+    public function testEnvironmentFilesCanAddNewItemsAtAnyLevel()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->assertEquals('here', $this->conf->get('app:level:starting:from'));
+    }
 }
