@@ -6,6 +6,8 @@ use Efficio\Configurare\Configuration;
 use Efficio\Cache\RuntimeCache;
 use PHPUnit_Framework_TestCase;
 
+require_once __dir__ . '/ConfigurationMock.php';
+
 class ConfigurationTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -15,7 +17,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->conf = new Configuration;
+        $this->conf = new ConfigurationMock;
     }
 
     public function tearDown()
@@ -43,6 +45,19 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         return [ [Configuration::YAML], [Configuration::JSON] ];
     }
 
+    /**
+     * data provider
+     * supported configuration formats and a sample string
+     * @return array
+     */
+    public function configurationFormatsAndString()
+    {
+        return [
+            [Configuration::YAML, 'test: fail'],
+            [Configuration::JSON, '{ "test": "fail" }'],
+         ];
+    }
+
     public function testNewConfigurationClassesCanBeCreated()
     {
         $this->assertTrue($this->conf instanceof Configuration);
@@ -51,13 +66,37 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testFileNamesCanBeParsedFromConfigurationPath()
     {
         $this->assertEquals('config/project',
-            Configuration::getFileName('config/project:test:users'));
+            $this->conf->callGetFileName('config/project:test:users'));
     }
 
     public function testFileNamesCanStillBeParsedWhenThereIsNoConfigurationPath()
     {
         $this->assertEquals('config/project',
-            Configuration::getFileName('config/project'));
+            $this->conf->callGetFileName('config/project'));
+    }
+
+    public function testPathParser()
+    {
+        $this->conf->registerPathParser('/^@(\w+)/', function($match, $path) {
+            return str_replace($match[0], strrev($match[1]), $path);
+        });
+
+        $this->assertEquals('gifnoc/project',
+            $this->conf->callGetFileName('@config/project'));
+    }
+
+    public function testPathParsersAreOverwritten()
+    {
+        $this->conf->registerPathParser('/^@(\w+)/', function($match, $path) {
+            return str_replace($match[0], strrev($match[1]), $path);
+        });
+
+        $this->conf->registerPathParser('/^@(\w+)/', function($match, $path) {
+            return str_replace($match[0], strrev($match[1]), $path) . '/more';
+        });
+
+        $this->assertEquals('gifnoc/project/more',
+            $this->conf->callGetFileName('@config/project'));
     }
 
     public function testConfigurationPathsCanBeParsed()
@@ -246,5 +285,34 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     {
         $this->conf->setDirectory(__dir__);
         $this->assertEquals('here', $this->conf->get('app:level:starting:from'));
+    }
+
+    /**
+     * @dataProvider configurationFormatsAndString
+     */
+    public function testMacroPreParsers($format, $string)
+    {
+        $this->conf->setFormat($format);
+        $this->conf->registerMacroPreParser('/(fail)/i', function($matches, $raw) {
+            return str_replace('fail', 'pass', $raw);
+        });
+
+        $decoded = $this->conf->callDecode($string);
+        $this->assertEquals('pass', $decoded['test']);
+    }
+
+    /**
+     * @dataProvider configurationFormatsAndString
+     */
+    public function testMacroPostParsers($format, $string)
+    {
+        $this->conf->setFormat($format);
+        $this->conf->registerMacroPostParser(function(& $obj) {
+            $obj['test'] = 'pass';
+            return $obj;
+        });
+
+        $decoded = $this->conf->callDecode($string);
+        $this->assertEquals('pass', $decoded['test']);
     }
 }

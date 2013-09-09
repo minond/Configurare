@@ -6,6 +6,7 @@ use Efficio\Cache\Caching;
 use Symfony\Component\Yaml\Yaml;
 use InvalidArgumentException;
 use Exception;
+use Closure;
 
 /**
  * project configuration reader and writer
@@ -47,6 +48,53 @@ class Configuration
      * @var string
      */
     private $dir = '';
+
+    /**
+     * patterns and path reformatters
+     * @var array
+     */
+    protected $path_parsers = [];
+
+    /**
+     * ran before decoding a configuration file
+     * @var array
+     */
+    protected $macro_pre_parsers = [];
+
+    /**
+     * ran before decoding a configuration file
+     * @var array
+     */
+    protected $macro_post_parsers = [];
+
+    /**
+     * add a path parser
+     * @param string $pattern
+     * @param Callable $formatter
+     */
+    public function registerPathParser($pattern, Callable $formatter)
+    {
+        $this->path_parsers[ $pattern ] = $formatter;
+    }
+
+    /**
+     * add a macro pre parser
+     * @param string $pattern
+     * @param Callable $formatter
+     */
+    public function registerMacroPreParser($pattern, Callable $formatter)
+    {
+        $this->macro_pre_parsers[ $pattern ] = $formatter;
+    }
+
+    /**
+     * add a macro post parser
+     * @param Callable $formatter
+     */
+    public function registerMacroPostParser(Callable $formatter)
+    {
+        $this->macro_post_parsers[] = Closure::bind($formatter, $this, get_class($this));
+    }
 
     /**
      * @param string $format
@@ -100,7 +148,7 @@ class Configuration
     {
         $envf = $this->getEnvFilePath($path);
         $file = $this->getFilePath($path);
-        $hash = static::getFileName($path);
+        $hash = $this->getFileName($path);
 
         if ($this->cache && $this->cache->has($hash)) {
             $data = $this->cache->get($hash);
@@ -155,7 +203,7 @@ class Configuration
     public function set($path, $value)
     {
         $keys = static::getConfPath($path);
-        $hash = static::getFileName($path);
+        $hash = $this->getFileName($path);
         $last = count($keys) - 1;
         $file = $this->getFilePath($path);
         $conf = $this->load($path);
@@ -186,9 +234,18 @@ class Configuration
      * @param string $raw
      * @return array
      */
-    private function decode($raw)
+    protected function decode($raw)
     {
         $obj = null;
+
+        // pre parsers
+        foreach ($this->macro_pre_parsers as $pattern => $formatter) {
+            preg_match_all($pattern, $raw, $match);
+
+            if (count($match)) {
+                $raw = call_user_func($formatter, $match, $raw);
+            }
+        }
 
         switch ($this->format) {
             case self::JSON:
@@ -201,6 +258,11 @@ class Configuration
                 break;
         }
 
+        // post parsers
+        foreach ($this->macro_post_parsers as $formatter) {
+            $obj = $formatter($obj);
+        }
+
         return $obj;
     }
 
@@ -209,7 +271,7 @@ class Configuration
      * @param mixed $obj
      * @return string
      */
-    private function encode($obj)
+    protected function encode($obj)
     {
         $raw = null;
 
@@ -235,7 +297,7 @@ class Configuration
     private function getFilePath($path)
     {
         return $this->dir . DIRECTORY_SEPARATOR .
-            static::getFileName($path) . $this->format;
+            $this->getFileName($path) . $this->format;
     }
 
     /**
@@ -246,7 +308,7 @@ class Configuration
     private function getEnvFilePath($path)
     {
         return $this->dir . DIRECTORY_SEPARATOR .
-            static::getFileName($path) . self::ENV_IDENTIFIER . $this->format;
+            $this->getFileName($path) . self::ENV_IDENTIFIER . $this->format;
     }
 
     /**
@@ -254,10 +316,20 @@ class Configuration
      * @param string $path
      * @return string
      */
-    public static function getFileName($path)
+    protected function getFileName($path)
     {
         $arr = explode(self::DELIM, $path, 2);
-        return array_shift($arr);
+        $raw = array_shift($arr);
+
+        foreach ($this->path_parsers as $pattern => $formatter) {
+            preg_match($pattern, $raw, $match);
+
+            if (count($match)) {
+                $raw = call_user_func($formatter, $match, $raw);
+            }
+        }
+
+        return $raw;
     }
 
     /**
