@@ -315,4 +315,41 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $decoded = $this->conf->callDecode($string);
         $this->assertEquals('pass', $decoded['test']);
     }
+
+    /**
+     * @dataProvider configurationFormats
+     */
+    public function testMergeFieldsAreMergedWhenGettingWholeFile($format)
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->conf->setFormat($format);
+        $all = $this->conf->load('configuration3', [
+            'name' => 'Marcos'
+        ]);
+        $this->assertEquals([
+            'name' => 'my name is Marcos.',
+        ], $all);
+    }
+
+    /**
+     * @dataProvider configurationFormats
+     */
+    public function testMergeFieldsAreMergedWhenGettingSingleProperty($format)
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->conf->setFormat($format);
+        $str = $this->conf->get('configuration3:name', [
+            'name' => 'Marcos'
+        ]);
+        $this->assertEquals('my name is Marcos.', $str);
+    }
+
+    public function testMergeFieldsAreMergedIntoEnviromentConfiguration()
+    {
+        $this->conf->setDirectory(__dir__);
+        $four = $this->conf->get('configuration4:three', [
+            'four' => '4'
+        ]);
+        $this->assertEquals(4, $four);
+    }
 }

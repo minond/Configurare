@@ -47,12 +47,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/minond/Utilitatis.git",
-                "reference": "2d90919a0bdd71a970ae5c992001c556e8f26a64"
+                "reference": "f062fe914a0a9626a8ad6beafedd9aef01c17e03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/minond/Utilitatis/zipball/2d90919a0bdd71a970ae5c992001c556e8f26a64",
-                "reference": "2d90919a0bdd71a970ae5c992001c556e8f26a64",
+                "url": "https://api.github.com/repos/minond/Utilitatis/zipball/f062fe914a0a9626a8ad6beafedd9aef01c17e03",
+                "reference": "f062fe914a0a9626a8ad6beafedd9aef01c17e03",
                 "shasum": ""
             },
             "require": {
@@ -75,7 +75,7 @@
                 }
             ],
             "description": "Helper functions and classes",
-            "time": "2013-09-21 01:35:57"
+            "time": "2013-10-07 03:26:14"
         },
         {
             "name": "symfony/yaml",

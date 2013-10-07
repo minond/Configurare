@@ -3,6 +3,7 @@
 namespace Efficio\Configurare;
 
 use Efficio\Cache\Caching;
+use Efficio\Utilitatis\Merger;
 use Symfony\Component\Yaml\Yaml;
 use InvalidArgumentException;
 use Exception;
@@ -141,11 +142,13 @@ class Configuration
     /**
      * load a configuration file
      * @param string $path
+     * @param array $mergedata
      * @throws Exception
      * @return array
      */
-    public function load($path)
+    public function load($path, array $mergedata = [])
     {
+        $merger = new Merger;
         $envf = $this->getEnvFilePath($path);
         $file = $this->getFilePath($path);
         $hash = $this->getFileName($path);
@@ -154,10 +157,12 @@ class Configuration
             $data = $this->cache->get($hash);
         } else if (is_readable($file)) {
             $rstr = file_get_contents($file);
+            $rstr = $merger->merge($rstr, $mergedata);
             $data = $this->decode($rstr);
 
             if (file_exists($envf)) {
                 $estr = file_get_contents($envf);
+                $estr = $merger->merge($estr, $mergedata);
                 $envd = $this->decode($estr);
                 $data = array_replace_recursive($data, $envd);
             }
@@ -175,12 +180,13 @@ class Configuration
     /**
      * retrieve a configuration value
      * @param string $path
+     * @param array $mergedata
      * @throws Exception
      * @return string
      */
-    public function get($path)
+    public function get($path, array $mergedata = [])
     {
-        $conf = $this->load($path);
+        $conf = $this->load($path, $mergedata);
         $keys = static::getConfPath($path);
 
         foreach ($keys as $key) {
