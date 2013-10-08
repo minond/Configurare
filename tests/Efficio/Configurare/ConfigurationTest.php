@@ -352,4 +352,14 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         ]);
         $this->assertEquals(4, $four);
     }
+
+    public function testOnlyMergeFieldsAreReplaced()
+    {
+        $this->conf->setDirectory(__dir__);
+        $list = $this->conf->get('configuration5:list', [
+            'two' => '2'
+        ]);
+        $this->assertEquals('{one}', $list['one']);
+        $this->assertEquals('2', $list['two']);
+    }
 }

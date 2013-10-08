@@ -157,12 +157,12 @@ class Configuration
             $data = $this->cache->get($hash);
         } else if (is_readable($file)) {
             $rstr = file_get_contents($file);
-            $rstr = $merger->merge($rstr, $mergedata);
+            $rstr = $merger->merge($rstr, $mergedata, false);
             $data = $this->decode($rstr);
 
             if (file_exists($envf)) {
                 $estr = file_get_contents($envf);
-                $estr = $merger->merge($estr, $mergedata);
+                $estr = $merger->merge($estr, $mergedata, false);
                 $envd = $this->decode($estr);
                 $data = array_replace_recursive($data, $envd);
             }
