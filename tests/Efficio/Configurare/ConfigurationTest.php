@@ -261,6 +261,26 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $numbers = $this->conf->set('configuration1:invalid', false);
     }
 
+    public function testSettingInvalidConfigurationPathsDoNotTriggerAnExceptionWhenForcePlaceIsSet()
+    {
+        $val = uniqid();
+        $this->conf->setDirectory(__dir__);
+        $this->conf->set('configuration6:path', []);
+        $this->conf->set('configuration6:path:invalid', $val, true);
+        $this->assertEquals($val, $this->conf->get('configuration6:path:invalid'));
+        $this->conf->set('configuration6:path', []);
+    }
+
+    public function testSettingInvalidConfigurationPathsDoNotTriggerAnExceptionWhenForcePlaceIsSetEvenForDeepPaths()
+    {
+        $val = uniqid();
+        $this->conf->setDirectory(__dir__);
+        $this->conf->set('configuration6:path', []);
+        $this->conf->set('configuration6:path:one:two:three:four:invalid', $val, true);
+        $this->assertEquals($val, $this->conf->get('configuration6:path:one:two:three:four:invalid'));
+        $this->conf->set('configuration6:path', []);
+    }
+
     public function testEnvironmentFilesOverwriteBaseConfiguration()
     {
         $this->conf->setDirectory(__dir__);

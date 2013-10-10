@@ -203,10 +203,12 @@ class Configuration
     /**
      * update a configuration value. returns write success
      * @param string $path
+     * @param mixed $value
+     * @param boolean $force, update key, even if path/key has to be created
      * @throws Exception
      * @return boolean
      */
-    public function set($path, $value)
+    public function set($path, $value, $force = false)
     {
         $keys = static::getConfPath($path);
         $hash = $this->getFileName($path);
@@ -216,9 +218,12 @@ class Configuration
         $find =& $conf;
 
         foreach ($keys as $index => $key) {
-            if (isset($find[ $key ])) {
+            if (isset($find[ $key ]) || $force) {
                 if ($index === $last) {
                     $find[ $key ] = $value;
+                } else if ($force) {
+                    $find[ $key ] = [];
+                    $find =& $find[ $key ];
                 } else {
                     $find =& $find[ $key ];
                 }
