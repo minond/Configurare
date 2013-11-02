@@ -1,0 +1,5 @@
+settings:
+  base: true
+  one: false
+  two: false
+  three: false

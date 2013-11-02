@@ -34,11 +34,11 @@ class Configuration
     const DELIM = ':';
 
     /**
-     * identifier for environment configuration file. ie. project config:
+     * identifier for environment configuration files. ie. project config:
      * app.yml, env config overwrite: app.env.yml
-     * @var string
+     * @var string[]
      */
-    protected $environment = '';
+    protected $environments = [];
 
     /**
      * configuration file format
@@ -141,19 +141,19 @@ class Configuration
     }
 
     /**
-     * @param string $env
+     * @param string[] $env
      */
-    public function setEnviroment($env)
+    public function setEnvironments($env)
     {
-        $this->environment = $env;
+        $this->environments = is_array($env) ? $eng : func_get_args();
     }
 
     /**
-     * @return string
+     * @return string[]
      */
-    public function getEnviroment()
+    public function getEnvironments()
     {
-        return $this->environment;
+        return $this->environments;
     }
 
     /**
@@ -166,7 +166,6 @@ class Configuration
     public function load($path, array $mergedata = [])
     {
         $merger = new Merger;
-        $envf = $this->getEnvFilePath($path);
         $file = $this->getFilePath($path);
         $hash = $this->getFileName($path);
 
@@ -177,11 +176,17 @@ class Configuration
             $rstr = $merger->merge($rstr, $mergedata, false);
             $data = $this->decode($rstr);
 
-            if ($this->environment && file_exists($envf)) {
-                $estr = file_get_contents($envf);
-                $estr = $merger->merge($estr, $mergedata, false);
-                $envd = $this->decode($estr);
-                $data = array_replace_recursive($data, $envd);
+            if (count($this->environments)) {
+                foreach ($this->environments as $env) {
+                    $envf = $this->getEnvFilePath($path, $env);
+
+                    if (file_exists($envf)) {
+                        $estr = file_get_contents($envf);
+                        $estr = $merger->merge($estr, $mergedata, false);
+                        $envd = $this->decode($estr);
+                        $data = array_replace_recursive($data, $envd);
+                    }
+                }
             }
         } else {
             throw new Exception('Invalid file: ' . $file);
@@ -331,12 +336,13 @@ class Configuration
     /**
      * @see Configuration::getFilePath
      * @param string $path
+     * @param string $env
      * @return string
      */
-    private function getEnvFilePath($path)
+    private function getEnvFilePath($path, $env)
     {
         return $this->dir . DIRECTORY_SEPARATOR .
-            $this->getFileName($path) . '.' . $this->environment . $this->format;
+            $this->getFileName($path) . '.' . $env . $this->format;
     }
 
     /**
