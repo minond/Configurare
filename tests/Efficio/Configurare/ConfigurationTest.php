@@ -85,6 +85,12 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
             $this->conf->callGetFileName('@config/project'));
     }
 
+    public function testEnviromentGetterAndSetter()
+    {
+        $this->conf->setEnviroment('123');
+        $this->assertEquals('123', $this->conf->getEnviroment());
+    }
+
     public function testPathParsersAreOverwritten()
     {
         $this->conf->registerPathParser('/^@(\w+)/', function($match, $path) {
@@ -281,9 +287,25 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->conf->set('configuration6:path', []);
     }
 
+    public function testEnvironmentIsNotLoadedByDefault()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->assertEquals('My App', $this->conf->get('app:name'));
+        $this->assertTrue($this->conf->get('app:level:one:two:four'));
+    }
+
+    public function testEnvironmentChecksCorrectFileNames()
+    {
+        $this->conf->setDirectory(__dir__);
+        $this->conf->setEnviroment('env123');
+        $this->assertEquals('My App', $this->conf->get('app:name'));
+        $this->assertTrue($this->conf->get('app:level:one:two:four'));
+    }
+
     public function testEnvironmentFilesOverwriteBaseConfiguration()
     {
         $this->conf->setDirectory(__dir__);
+        $this->conf->setEnviroment('env');
         $this->assertEquals('Your App', $this->conf->get('app:name'));
         $this->assertFalse($this->conf->get('app:level:one:two:four'));
     }
@@ -298,12 +320,14 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testEnvironmentFilesCanAddNewItemsAtTheBaseLevel()
     {
         $this->conf->setDirectory(__dir__);
+        $this->conf->setEnviroment('env');
         $this->assertEquals('new', $this->conf->get('app:something'));
     }
 
     public function testEnvironmentFilesCanAddNewItemsAtAnyLevel()
     {
         $this->conf->setDirectory(__dir__);
+        $this->conf->setEnviroment('env');
         $this->assertEquals('here', $this->conf->get('app:level:starting:from'));
     }
 
@@ -367,6 +391,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testMergeFieldsAreMergedIntoEnviromentConfiguration()
     {
         $this->conf->setDirectory(__dir__);
+        $this->conf->setEnviroment('env');
         $four = $this->conf->get('configuration4:three', [
             'four' => '4'
         ]);

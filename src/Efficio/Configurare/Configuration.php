@@ -36,19 +36,20 @@ class Configuration
     /**
      * identifier for environment configuration file. ie. project config:
      * app.yml, env config overwrite: app.env.yml
+     * @var string
      */
-    const ENV_IDENTIFIER = '.env';
+    protected $environment = '';
 
     /**
      * configuration file format
      */
-    private $format = self::YAML;
+    protected $format = self::YAML;
 
     /**
      * configuration files directory
      * @var string
      */
-    private $dir = '';
+    protected $dir = '';
 
     /**
      * patterns and path reformatters
@@ -140,6 +141,22 @@ class Configuration
     }
 
     /**
+     * @param string $env
+     */
+    public function setEnviroment($env)
+    {
+        $this->environment = $env;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEnviroment()
+    {
+        return $this->environment;
+    }
+
+    /**
      * load a configuration file
      * @param string $path
      * @param array $mergedata
@@ -160,7 +177,7 @@ class Configuration
             $rstr = $merger->merge($rstr, $mergedata, false);
             $data = $this->decode($rstr);
 
-            if (file_exists($envf)) {
+            if ($this->environment && file_exists($envf)) {
                 $estr = file_get_contents($envf);
                 $estr = $merger->merge($estr, $mergedata, false);
                 $envd = $this->decode($estr);
@@ -319,7 +336,7 @@ class Configuration
     private function getEnvFilePath($path)
     {
         return $this->dir . DIRECTORY_SEPARATOR .
-            $this->getFileName($path) . self::ENV_IDENTIFIER . $this->format;
+            $this->getFileName($path) . '.' . $this->environment . $this->format;
     }
 
     /**
