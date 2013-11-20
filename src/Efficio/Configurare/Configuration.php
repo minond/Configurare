@@ -145,7 +145,7 @@ class Configuration
      */
     public function setEnvironments($env)
     {
-        $this->environments = is_array($env) ? $eng : func_get_args();
+        $this->environments = is_array($env) ? $env : func_get_args();
     }
 
     /**

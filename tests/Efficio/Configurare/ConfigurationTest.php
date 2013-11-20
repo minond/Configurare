@@ -85,9 +85,15 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
             $this->conf->callGetFileName('@config/project'));
     }
 
-    public function testEnvironmentGetterAndSetter()
+    public function testEnvironmentGetterAndSetterUsingArgs()
     {
         $this->conf->setEnvironments('123');
+        $this->assertEquals(['123'], $this->conf->getEnvironments());
+    }
+
+    public function testEnvironmentGetterAndSetterUsingArray()
+    {
+        $this->conf->setEnvironments(['123']);
         $this->assertEquals(['123'], $this->conf->getEnvironments());
     }
 
