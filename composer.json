@@ -1,6 +1,7 @@
 {
     "name": "minond/configurare",
     "description": "Configuration management",
+    "license": "GPL-2.0+",
 
     "authors": [
         {
@@ -11,9 +12,9 @@
 
     "require": {
         "php": ">=5.4.0",
-        "minond/cache": "dev-master",
-        "minond/utilitatis": "dev-master",
-        "symfony/yaml": "2.3.3"
+        "symfony/yaml": "2.3.3",
+        "minond/cache": "v13.12",
+        "minond/utilitatis": "v13.12"
     },
 
     "require-dev": {
