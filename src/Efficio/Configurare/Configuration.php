@@ -194,10 +194,7 @@ class Configuration
             }
         }
 
-        if ($this->cache) {
-            $this->cache->set($hash, $data);
-        }
-
+        $this->saveToCache($hash, $data);
         return $data;
     }
 
@@ -236,8 +233,8 @@ class Configuration
     {
         $keys = static::getConfPath($path);
         $hash = $this->getFileName($path);
-        $last = count($keys) - 1;
         $file = $this->getFilePath($path);
+        $last = count($keys) - 1;
 
         $conf = $this->load($path);
         $find =& $conf;
@@ -259,12 +256,21 @@ class Configuration
         }
 
         // update cache and write to file
-        if ($this->cache) {
-            $this->cache->set($hash, $conf);
-        }
-
-        // write ok?
+        $this->saveToCache($hash, $conf);
         return file_put_contents($file, $this->encode($conf)) !== false;
+    }
+
+    /**
+     * save to cache if there is one
+     * @param string $key
+     * @param mixed $val
+     * @return void
+     */
+    protected function saveToCache($key, $val)
+    {
+        if ($this->cache) {
+            $this->cache->set($key, $val);
+        }
     }
 
     /**
