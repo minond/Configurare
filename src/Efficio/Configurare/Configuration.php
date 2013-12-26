@@ -165,31 +165,33 @@ class Configuration
      */
     public function load($path, array $mergedata = [])
     {
-        $merger = new Merger;
         $file = $this->getFilePath($path);
         $hash = $this->getFileName($path);
 
+        // cached
         if ($this->cache && $this->cache->has($hash)) {
-            $data = $this->cache->get($hash);
-        } else if (is_readable($file)) {
-            $rstr = file_get_contents($file);
-            $rstr = $merger->merge($rstr, $mergedata, false);
-            $data = $this->decode($rstr);
+            return $this->cache->get($hash);
+        }
 
-            if (count($this->environments)) {
-                foreach ($this->environments as $env) {
-                    $envf = $this->getEnvFilePath($path, $env);
-
-                    if (file_exists($envf)) {
-                        $estr = file_get_contents($envf);
-                        $estr = $merger->merge($estr, $mergedata, false);
-                        $envd = $this->decode($estr);
-                        $data = array_replace_recursive($data, $envd);
-                    }
-                }
-            }
-        } else {
+        // configuration file not found
+        if (!is_readable($file)) {
             throw new Exception('Invalid file: ' . $file);
+        }
+
+        $merger = new Merger;
+        $rstr = file_get_contents($file);
+        $rstr = $merger->merge($rstr, $mergedata, false);
+        $data = $this->decode($rstr);
+
+        foreach ($this->environments as $env) {
+            $envf = $this->getEnvFilePath($path, $env);
+
+            if (file_exists($envf)) {
+                $estr = file_get_contents($envf);
+                $estr = $merger->merge($estr, $mergedata, false);
+                $envd = $this->decode($estr);
+                $data = array_replace_recursive($data, $envd);
+            }
         }
 
         if ($this->cache) {
@@ -236,21 +238,23 @@ class Configuration
         $hash = $this->getFileName($path);
         $last = count($keys) - 1;
         $file = $this->getFilePath($path);
+
         $conf = $this->load($path);
         $find =& $conf;
 
         foreach ($keys as $index => $key) {
-            if (isset($find[ $key ]) || $force) {
-                if ($index === $last) {
-                    $find[ $key ] = $value;
-                } else if ($force) {
-                    $find[ $key ] = [];
-                    $find =& $find[ $key ];
-                } else {
-                    $find =& $find[ $key ];
-                }
-            } else {
+            // invalid config path and we're not forcing it
+            if (!isset($find[ $key ]) && !$force) {
                 throw new Exception('Invalid configuration path: ' . $path);
+            }
+
+            if ($index === $last) {
+                $find[ $key ] = $value;
+            } else if ($force) {
+                $find[ $key ] = [];
+                $find =& $find[ $key ];
+            } else {
+                $find =& $find[ $key ];
             }
         }
 
@@ -259,7 +263,36 @@ class Configuration
             $this->cache->set($hash, $conf);
         }
 
+        // write ok?
         return file_put_contents($file, $this->encode($conf)) !== false;
+    }
+
+    /**
+     * apply all pre parser functions on a raw configuration string
+     * @param string & $raw
+     * @return void
+     */
+    protected function applyPreParsers(& $raw)
+    {
+        foreach ($this->macro_pre_parsers as $pattern => $formatter) {
+            preg_match_all($pattern, $raw, $match);
+
+            if (count($match)) {
+                $raw = call_user_func($formatter, $match, $raw);
+            }
+        }
+    }
+
+    /**
+     * apply all post parsers on a configuration object
+     * @param array & $obj
+     * @return void
+     */
+    protected function applyPostParsers(& $arr)
+    {
+        foreach ($this->macro_post_parsers as $formatter) {
+            $arr = $formatter($arr);
+        }
     }
 
     /**
@@ -269,34 +302,22 @@ class Configuration
      */
     protected function decode($raw)
     {
-        $obj = null;
-
-        // pre parsers
-        foreach ($this->macro_pre_parsers as $pattern => $formatter) {
-            preg_match_all($pattern, $raw, $match);
-
-            if (count($match)) {
-                $raw = call_user_func($formatter, $match, $raw);
-            }
-        }
+        $arr = null;
+        $this->applyPreParsers($raw);
 
         switch ($this->format) {
             case self::JSON:
-                $obj = json_decode($raw, true);
+                $arr = json_decode($raw, true);
                 break;
 
             case self::YAML:
             default:
-                $obj = Yaml::parse($raw);
+                $arr = Yaml::parse($raw);
                 break;
         }
 
-        // post parsers
-        foreach ($this->macro_post_parsers as $formatter) {
-            $obj = $formatter($obj);
-        }
-
-        return $obj;
+        $this->applyPostParsers($arr);
+        return $arr;
     }
 
     /**
