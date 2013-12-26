@@ -178,21 +178,10 @@ class Configuration
             throw new Exception('Invalid file: ' . $file);
         }
 
-        $merger = new Merger;
-        $rstr = file_get_contents($file);
-        $rstr = $merger->merge($rstr, $mergedata, false);
-        $data = $this->decode($rstr);
-
-        foreach ($this->environments as $env) {
-            $envf = $this->getEnvFilePath($path, $env);
-
-            if (file_exists($envf)) {
-                $estr = file_get_contents($envf);
-                $estr = $merger->merge($estr, $mergedata, false);
-                $envd = $this->decode($estr);
-                $data = array_replace_recursive($data, $envd);
-            }
-        }
+        // project config and enviroment config
+        $data = $this->loadFile($file, $mergedata);
+        $envd = $this->loadEnv($path, $mergedata);
+        $data = array_replace_recursive($data, $envd);
 
         $this->saveToCache($hash, $data);
         return $data;
@@ -391,6 +380,42 @@ class Configuration
         }
 
         return $raw;
+    }
+
+    /**
+     * loads and decodes a configuration files
+     * @param string $path
+     * @param array $mergedata
+     * @return array
+     */
+    protected function loadFile($file, array $mergedata = [])
+    {
+        $merger = new Merger;
+        $str = file_get_contents($file);
+        $str = $merger->merge($str, $mergedata, false);
+        return $this->decode($str);
+    }
+
+    /**
+     * loads all enviroment configuration files
+     * @param string $path
+     * @param array $mergedata
+     * @return array
+     */
+    protected function loadEnv($path, array $mergedata = [])
+    {
+        $data = [];
+
+        foreach ($this->environments as $env) {
+            $envf = $this->getEnvFilePath($path, $env);
+
+            if (file_exists($envf)) {
+                $envd = $this->loadFile($envf, $mergedata);
+                $data = array_replace_recursive($data, $envd);
+            }
+        }
+
+        return $data;
     }
 
     /**
