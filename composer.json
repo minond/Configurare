@@ -13,8 +13,8 @@
     "require": {
         "php": ">=5.4.0",
         "symfony/yaml": "2.3.3",
-        "minond/cache": "v13.12",
-        "minond/utilitatis": "v13.12"
+        "minond/cache": "1.0.*",
+        "minond/utilitatis": "1.0.*"
     },
 
     "require-dev": {
