@@ -10,8 +10,6 @@
 ## Sample usage
 #### Initializing configuration
 ```php
-require 'vendor/autoload.php';
-
 use Efficio\Configurare\Configuration;
 
 $conf = new Configuration;
