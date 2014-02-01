@@ -34,6 +34,10 @@ echo $conf->get('app:name'); // => My Application
 
 // this gets [ 'usa': 'utah': 'provo': 'author': ]
 echo $conf->get('app:usa:utah:provo:author'); // => Marcos Minond
+
+// you can also get nested configuration files
+// looks in config/users/2014/jan.yml
+echo $conf->get('users/2014/jan:activities:music');
 ```
 
 #### Setting values
