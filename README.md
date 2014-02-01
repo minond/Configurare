@@ -58,7 +58,7 @@ usa:
 does:
   not:
     exists:
-      yet: yes
+      yet: 'yes'
 ```
 
 #### Enviroments
