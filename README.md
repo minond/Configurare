@@ -21,7 +21,7 @@ $conf->setFormat(Configuration::YAML);
 
 ```yaml
 # config/app.yml
-name: 'My Other Application'
+name: 'My Application'
 usa:
   utah:
     provo:
@@ -32,10 +32,10 @@ usa:
 ```php
 // looks for in ./config/app.yml
 // this gets [ 'name': ]
-echo $conf->get('app:name');
+echo $conf->get('app:name'); // => My Application
 
 // this gets [ 'usa': 'utah': 'provo': 'author': ]
-echo $conf->get('app:usa:utah:provo:author');
+echo $conf->get('app:usa:utah:provo:author'); // => Marcos Minond
 ```
 
 #### Setting values
@@ -45,7 +45,20 @@ $conf->set('app:name', 'My Other Application');
 
 // if they do not then the write must be forced by passing a third parameter
 // set to true
-$conf->set('app:does:not:exists', 'yes', true);
+$conf->set('app:does:not:exists:yet', 'yes', true);
+```
+
+```yaml
+# config/app.yml
+name: 'My Other Application'
+usa:
+  utah:
+    provo:
+      author: 'Marcos Minond'
+does:
+  not:
+    exists:
+      yet: yes
 ```
 
 #### Enviroments
