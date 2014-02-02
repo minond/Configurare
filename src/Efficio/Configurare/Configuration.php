@@ -6,8 +6,6 @@ use Efficio\Cache\Caching;
 use Efficio\Utilitatis\Merger;
 use Efficio\Configurare\Parser\Parser;
 use Efficio\Configurare\Parser\Yaml;
-use Efficio\Configurare\Parser\Json;
-use InvalidArgumentException;
 use Exception;
 use Closure;
 
