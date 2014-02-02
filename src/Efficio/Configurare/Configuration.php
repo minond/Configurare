@@ -187,11 +187,6 @@ class Configuration
             return $this->cache->get($hash);
         }
 
-        // configuration file not found
-        if (!is_readable($file)) {
-            throw new Exception('Invalid file: ' . $file);
-        }
-
         // project config and enviroment config
         $data = $this->loadFile($file, $mergedata);
         $envd = $this->loadEnv($path, $mergedata);
@@ -381,6 +376,12 @@ class Configuration
     protected function loadFile($file, array $mergedata = [])
     {
         $merger = new Merger;
+
+        // configuration file not found
+        if (!is_readable($file)) {
+            throw new Exception('Invalid file: ' . $file);
+        }
+
         $str = file_get_contents($file);
         $str = $merger->merge($str, $mergedata, false);
         return $this->decode($str);
