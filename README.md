@@ -14,7 +14,6 @@ use Efficio\Configurare\Configuration;
 
 $conf = new Configuration;
 $conf->setDirectory('./config/');
-$conf->setFormat(Configuration::YAML);
 ```
 
 ```yaml
@@ -24,6 +23,48 @@ usa:
   utah:
     provo:
       author: 'Marcos Minond'
+```
+
+#### Configuring configuratio file formats and parsers
+```php
+// available parsers
+use Efficio\Configurare\Parser\Json;
+
+$conf->setExtension('.json'); // default is '.yml'
+$conf->setParser(new Json); // default is Efficio\Configurare\Parser\Yaml
+```
+
+#### Using custom formats
+```php
+use Efficio\Configurare\Parser\Parser;
+
+class CustomParser implements Parser
+{
+    /**
+     * takes a raw string, parses it, and returns the array representing the
+     * data
+     * @param string $raw
+     * @return array
+     */
+    public function decode($raw)
+    {
+        return unserialize($raw);
+    }
+
+    /**
+     * takes an array or an object and converts it into a string that can be
+     * saved in a file
+     * @param mixed $obj
+     * @return string
+     */
+    public function encode($obj)
+    {
+        return serialize($obj);
+    }
+}
+
+$conf->setExtension('.custom');
+$conf->setParser(new CustomParser);
 ```
 
 #### Getting values
