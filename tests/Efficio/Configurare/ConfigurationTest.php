@@ -25,13 +25,13 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $path = 'writetest:one:two:three';
 
         $yaml = new Configuration;
-        $yaml->setFormat(Configuration::YAML);
+        $yaml->setExtension(Configuration::YAML);
         $yaml->setParser(new Yaml);
         $yaml->setDirectory(__dir__);
         $yaml->set($path, 1);
 
         $json = new Configuration;
-        $json->setFormat(Configuration::JSON);
+        $json->setExtension(Configuration::JSON);
         $json->setParser(new Json);
         $json->setDirectory(__dir__);
         $json->set($path, 1);
@@ -39,10 +39,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
 
     /**
      * data provider
-     * supported configuration formats
+     * supported configuration extensions
      * @return array
      */
-    public function configurationFormats()
+    public function configurationExtensions()
     {
         return [
             [Configuration::YAML, new Yaml],
@@ -52,10 +52,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
 
     /**
      * data provider
-     * supported configuration formats and a sample string
+     * supported configuration extensions and a sample string
      * @return array
      */
-    public function configurationFormatsAndString()
+    public function configurationExtensionsAndString()
     {
         return [
             [Configuration::YAML, new Yaml, 'test: fail'],
@@ -128,10 +128,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
             Configuration::getConfPath('config/project'));
     }
 
-    public function testSetFormatsCanBeSetAndRetrieved()
+    public function testSetExtensionsCanBeSetAndRetrieved()
     {
-        $this->conf->setFormat(Configuration::JSON);
-        $this->assertEquals(Configuration::JSON, $this->conf->getFormat());
+        $this->conf->setExtension(Configuration::JSON);
+        $this->assertEquals(Configuration::JSON, $this->conf->getExtension());
     }
 
     public function testSetParsersCanBeSetAndRetrieved()
@@ -141,9 +141,9 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($json, $this->conf->getParser());
     }
 
-    public function testYamlIsTheDefaultFormat()
+    public function testYamlIsTheDefaultExtension()
     {
-        $this->assertEquals(Configuration::YAML, $this->conf->getFormat());
+        $this->assertEquals(Configuration::YAML, $this->conf->getExtension());
     }
 
     public function testYamlIsTheDefaultParser()
@@ -158,12 +158,12 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormats
+     * @dataProvider configurationExtensions
      */
-    public function testConfigurationFilesCanBeLoaded($format, $parser)
+    public function testConfigurationFilesCanBeLoaded($extension, $parser)
     {
         $this->conf->setDirectory(__dir__);
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $all = $this->conf->load('configuration1');
         $this->assertEquals([
@@ -231,14 +231,14 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormats
+     * @dataProvider configurationExtensions
      */
-    public function testSettingValues($format, $parser)
+    public function testSettingValues($extension, $parser)
     {
         $val = mt_rand();
         $path = 'writetest:one:two:three';
         $this->conf->setDirectory(__dir__);
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $this->assertTrue($this->conf->set($path, $val));
         $this->assertEquals($val, $this->conf->get($path));
@@ -257,20 +257,20 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormats
+     * @dataProvider configurationExtensions
      */
-    public function testSettingValuesUpdatesTheConfigurationFiles($format, $parser)
+    public function testSettingValuesUpdatesTheConfigurationFiles($extension, $parser)
     {
         $val = mt_rand();
         $path = 'writetest:one:two:three';
         $cache = new RuntimeCache;
         $this->conf->setCache($cache);
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $this->conf->setDirectory(__dir__);
         $this->conf->set($path, $val);
 
-        $data = file_get_contents(__dir__ . DIRECTORY_SEPARATOR . 'writetest' . $format);
+        $data = file_get_contents(__dir__ . DIRECTORY_SEPARATOR . 'writetest' . $extension);
         $this->assertTrue(strpos($data, (string) $val) !== false);
     }
 
@@ -349,11 +349,11 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormatsAndString
+     * @dataProvider configurationExtensionsAndString
      */
-    public function testMacroPreParsers($format, $parser, $string)
+    public function testMacroPreParsers($extension, $parser, $string)
     {
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $this->conf->registerMacroPreParser('/(fail)/i', function($matches, $raw) {
             return str_replace('fail', 'pass', $raw);
@@ -364,11 +364,11 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormatsAndString
+     * @dataProvider configurationExtensionsAndString
      */
-    public function testMacroPostParsers($format, $parser, $string)
+    public function testMacroPostParsers($extension, $parser, $string)
     {
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $this->conf->registerMacroPostParser(function(& $obj) {
             $obj['test'] = 'pass';
@@ -380,12 +380,12 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormats
+     * @dataProvider configurationExtensions
      */
-    public function testMergeFieldsAreMergedWhenGettingWholeFile($format, $parser)
+    public function testMergeFieldsAreMergedWhenGettingWholeFile($extension, $parser)
     {
         $this->conf->setDirectory(__dir__);
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $all = $this->conf->load('configuration3', [
             'name' => 'Marcos'
@@ -396,12 +396,12 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider configurationFormats
+     * @dataProvider configurationExtensions
      */
-    public function testMergeFieldsAreMergedWhenGettingSingleProperty($format, $parser)
+    public function testMergeFieldsAreMergedWhenGettingSingleProperty($extension, $parser)
     {
         $this->conf->setDirectory(__dir__);
-        $this->conf->setFormat($format);
+        $this->conf->setExtension($extension);
         $this->conf->setParser($parser);
         $str = $this->conf->get('configuration3:name', [
             'name' => 'Marcos'

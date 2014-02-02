@@ -17,7 +17,7 @@ class Configuration
     use Caching;
 
     /**
-     * configuration file formats. defaults to yaml
+     * configuration file extensions. defaults to yaml
      */
     const JSON = '.json';
     const YAML = '.yml';
@@ -35,9 +35,9 @@ class Configuration
     protected $environments = [];
 
     /**
-     * configuration file format
+     * configuration file extension
      */
-    protected $format;
+    protected $extension;
 
     /**
      * @var Parser
@@ -69,12 +69,13 @@ class Configuration
     protected $macro_post_parsers = [];
 
     /**
-     * sets yaml parser as default format and parser
+     * @param string $extension
+     * @param Parser $parser
      */
-    public function __construct()
+    public function __construct($extension = null, $parser = null)
     {
-        $this->format = self::YAML;
-        $this->parser = new Yaml;
+        $this->extension = $extension ?: self::YAML;
+        $this->parser = $parser ?: new Yaml;
     }
 
     /**
@@ -123,19 +124,19 @@ class Configuration
     }
 
     /**
-     * @param string $format
+     * @param string $extension
      */
-    public function setFormat($format)
+    public function setExtension($extension)
     {
-        $this->format = $format;
+        $this->extension = $extension;
     }
 
     /**
      * @return string
      */
-    public function getFormat()
+    public function getExtension()
     {
-        return $this->format;
+        return $this->extension;
     }
 
     /**
@@ -331,7 +332,7 @@ class Configuration
     private function getFilePath($path)
     {
         return $this->dir . DIRECTORY_SEPARATOR .
-            $this->getFileName($path) . $this->format;
+            $this->getFileName($path) . $this->extension;
     }
 
     /**
@@ -343,7 +344,7 @@ class Configuration
     private function getEnvFilePath($path, $env)
     {
         return $this->dir . DIRECTORY_SEPARATOR .
-            $this->getFileName($path) . '.' . $env . $this->format;
+            $this->getFileName($path) . '.' . $env . $this->extension;
     }
 
     /**
