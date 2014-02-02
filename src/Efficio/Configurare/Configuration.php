@@ -7,7 +7,6 @@ use Efficio\Utilitatis\Merger;
 use Efficio\Configurare\Parser\Parser;
 use Efficio\Configurare\Parser\Yaml;
 use Efficio\Configurare\Parser\Json;
-use Efficio\Configurare\Parser\Ini;
 use InvalidArgumentException;
 use Exception;
 use Closure;
@@ -31,11 +30,6 @@ class Configuration
     const DELIM = ':';
 
     /**
-     * valid formats
-     */
-    protected static $formats = [ self::JSON, self::YAML ];
-
-    /**
      * identifier for environment configuration files. ie. project config:
      * app.yml, env config overwrite: app.env.yml
      * @var string[]
@@ -45,7 +39,12 @@ class Configuration
     /**
      * configuration file format
      */
-    protected $format = self::YAML;
+    protected $format;
+
+    /**
+     * @var Parser
+     */
+    protected $parser;
 
     /**
      * configuration files directory
@@ -72,15 +71,11 @@ class Configuration
     protected $macro_post_parsers = [];
 
     /**
-     * @var Parser
-     */
-    protected $parser;
-
-    /**
-     * sets yaml parser as default parser
+     * sets yaml parser as default format and parser
      */
     public function __construct()
     {
+        $this->format = self::YAML;
         $this->parser = new Yaml;
     }
 
@@ -114,28 +109,26 @@ class Configuration
     }
 
     /**
+     * @param Parser $parser
+     */
+    public function setParser(Parser $parser)
+    {
+        $this->parser = $parser;
+    }
+
+    /**
+     * @return Parser
+     */
+    public function getParser()
+    {
+        return $this->parser;
+    }
+
+    /**
      * @param string $format
-     * @throws InvalidArgumentException
      */
     public function setFormat($format)
     {
-        if (!in_array($format, static::$formats)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid format: %s, following formats are are supported: %s',
-                $format, implode(', ', static::$formats)
-            ));
-        }
-
-        switch ($format) {
-            case self::JSON:
-                $this->parser = new Json;
-                break;
-
-            case self::YAML:
-                $this->parser = new Yaml;
-                break;
-        }
-
         $this->format = $format;
     }
 

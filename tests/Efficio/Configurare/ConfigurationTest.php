@@ -3,6 +3,8 @@
 namespace Efficio\Tests\Configurare;
 
 use Efficio\Configurare\Configuration;
+use Efficio\Configurare\Parser\Yaml;
+use Efficio\Configurare\Parser\Json;
 use Efficio\Cache\RuntimeCache;
 use PHPUnit_Framework_TestCase;
 
@@ -24,11 +26,13 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
 
         $yaml = new Configuration;
         $yaml->setFormat(Configuration::YAML);
+        $yaml->setParser(new Yaml);
         $yaml->setDirectory(__dir__);
         $yaml->set($path, 1);
 
         $json = new Configuration;
         $json->setFormat(Configuration::JSON);
+        $json->setParser(new Json);
         $json->setDirectory(__dir__);
         $json->set($path, 1);
     }
@@ -40,7 +44,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
      */
     public function configurationFormats()
     {
-        return [ [Configuration::YAML], [Configuration::JSON] ];
+        return [
+            [Configuration::YAML, new Yaml],
+            [Configuration::JSON, new Json],
+        ];
     }
 
     /**
@@ -51,8 +58,8 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function configurationFormatsAndString()
     {
         return [
-            [Configuration::YAML, 'test: fail'],
-            [Configuration::JSON, '{ "test": "fail" }'],
+            [Configuration::YAML, new Yaml, 'test: fail'],
+            [Configuration::JSON, new Json, '{ "test": "fail" }'],
          ];
     }
 
@@ -127,18 +134,21 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(Configuration::JSON, $this->conf->getFormat());
     }
 
+    public function testSetParsersCanBeSetAndRetrieved()
+    {
+        $json = new Json;
+        $this->conf->setParser($json);
+        $this->assertEquals($json, $this->conf->getParser());
+    }
+
     public function testYamlIsTheDefaultFormat()
     {
         $this->assertEquals(Configuration::YAML, $this->conf->getFormat());
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Invalid format: .jsoninvalid, following formats are are supported: .json, .yml
-     */
-    public function testInvalidFormatsThrowException()
+    public function testYamlIsTheDefaultParser()
     {
-        $this->conf->setFormat(Configuration::JSON . 'invalid');
+        $this->assertEquals(get_class(new Yaml), get_class($this->conf->getParser()));
     }
 
     public function testDirectoryGetterAndSetter()
@@ -150,10 +160,11 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormats
      */
-    public function testConfigurationFilesCanBeLoaded($format)
+    public function testConfigurationFilesCanBeLoaded($format, $parser)
     {
         $this->conf->setDirectory(__dir__);
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $all = $this->conf->load('configuration1');
         $this->assertEquals([
             'numbers' => [1, 2, 3]
@@ -222,12 +233,13 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormats
      */
-    public function testSettingValues($format)
+    public function testSettingValues($format, $parser)
     {
         $val = mt_rand();
         $path = 'writetest:one:two:three';
         $this->conf->setDirectory(__dir__);
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $this->assertTrue($this->conf->set($path, $val));
         $this->assertEquals($val, $this->conf->get($path));
     }
@@ -247,13 +259,14 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormats
      */
-    public function testSettingValuesUpdatesTheConfigurationFiles($format)
+    public function testSettingValuesUpdatesTheConfigurationFiles($format, $parser)
     {
         $val = mt_rand();
         $path = 'writetest:one:two:three';
         $cache = new RuntimeCache;
         $this->conf->setCache($cache);
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $this->conf->setDirectory(__dir__);
         $this->conf->set($path, $val);
 
@@ -338,9 +351,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormatsAndString
      */
-    public function testMacroPreParsers($format, $string)
+    public function testMacroPreParsers($format, $parser, $string)
     {
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $this->conf->registerMacroPreParser('/(fail)/i', function($matches, $raw) {
             return str_replace('fail', 'pass', $raw);
         });
@@ -352,9 +366,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormatsAndString
      */
-    public function testMacroPostParsers($format, $string)
+    public function testMacroPostParsers($format, $parser, $string)
     {
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $this->conf->registerMacroPostParser(function(& $obj) {
             $obj['test'] = 'pass';
             return $obj;
@@ -367,10 +382,11 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormats
      */
-    public function testMergeFieldsAreMergedWhenGettingWholeFile($format)
+    public function testMergeFieldsAreMergedWhenGettingWholeFile($format, $parser)
     {
         $this->conf->setDirectory(__dir__);
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $all = $this->conf->load('configuration3', [
             'name' => 'Marcos'
         ]);
@@ -382,10 +398,11 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider configurationFormats
      */
-    public function testMergeFieldsAreMergedWhenGettingSingleProperty($format)
+    public function testMergeFieldsAreMergedWhenGettingSingleProperty($format, $parser)
     {
         $this->conf->setDirectory(__dir__);
         $this->conf->setFormat($format);
+        $this->conf->setParser($parser);
         $str = $this->conf->get('configuration3:name', [
             'name' => 'Marcos'
         ]);
