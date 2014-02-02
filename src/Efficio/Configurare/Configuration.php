@@ -4,7 +4,10 @@ namespace Efficio\Configurare;
 
 use Efficio\Cache\Caching;
 use Efficio\Utilitatis\Merger;
-use Symfony\Component\Yaml\Yaml;
+use Efficio\Configurare\Parser\Parser;
+use Efficio\Configurare\Parser\Yaml;
+use Efficio\Configurare\Parser\Json;
+use Efficio\Configurare\Parser\Ini;
 use InvalidArgumentException;
 use Exception;
 use Closure;
@@ -23,15 +26,14 @@ class Configuration
     const YAML = '.yml';
 
     /**
-     * json decode/encode configuration
-     */
-    const YAML_INLINE_LEVEL = 100;
-    const YAML_INDENT = 2;
-
-    /**
      * configuration path delimeter
      */
     const DELIM = ':';
+
+    /**
+     * valid formats
+     */
+    protected static $formats = [ self::JSON, self::YAML ];
 
     /**
      * identifier for environment configuration files. ie. project config:
@@ -70,6 +72,19 @@ class Configuration
     protected $macro_post_parsers = [];
 
     /**
+     * @var Parser
+     */
+    protected $parser;
+
+    /**
+     * sets yaml parser as default parser
+     */
+    public function __construct()
+    {
+        $this->parser = new Yaml;
+    }
+
+    /**
      * add a path parser
      * @param string $pattern
      * @param Callable $formatter
@@ -104,13 +119,21 @@ class Configuration
      */
     public function setFormat($format)
     {
-        $formats = [ self::JSON, self::YAML ];
-
-        if (!in_array($format, $formats)) {
+        if (!in_array($format, static::$formats)) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid format: %s, following formats are are supported: %s',
-                $format, implode(', ', $formats)
+                $format, implode(', ', static::$formats)
             ));
+        }
+
+        switch ($format) {
+            case self::JSON:
+                $this->parser = new Json;
+                break;
+
+            case self::YAML:
+                $this->parser = new Yaml;
+                break;
         }
 
         $this->format = $format;
@@ -299,18 +322,7 @@ class Configuration
     {
         $arr = null;
         $this->applyPreParsers($raw);
-
-        switch ($this->format) {
-            case self::JSON:
-                $arr = json_decode($raw, true);
-                break;
-
-            case self::YAML:
-            default:
-                $arr = Yaml::parse($raw);
-                break;
-        }
-
+        $arr = $this->parser->decode($raw);
         $this->applyPostParsers($arr);
         return $arr;
     }
@@ -322,20 +334,7 @@ class Configuration
      */
     protected function encode($obj)
     {
-        $raw = null;
-
-        switch ($this->format) {
-            case self::JSON:
-                $raw = json_encode($obj, JSON_PRETTY_PRINT);
-                break;
-
-            case self::YAML:
-            default:
-                $raw = Yaml::dump($obj, self::YAML_INLINE_LEVEL, self::YAML_INDENT);
-                break;
-        }
-
-        return $raw;
+        return $this->parser->encode($obj);
     }
 
     /**

@@ -6,8 +6,6 @@ use Efficio\Configurare\Configuration;
 use Efficio\Cache\RuntimeCache;
 use PHPUnit_Framework_TestCase;
 
-require_once __dir__ . '/ConfigurationMock.php';
-
 class ConfigurationTest extends PHPUnit_Framework_TestCase
 {
     /**

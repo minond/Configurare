@@ -1,30 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <phpunit backupGlobals="false"
-		 backupStaticAttributes="false"
-		 colors="true"
-		 convertErrorsToExceptions="true"
-		 convertNoticesToExceptions="true"
-		 convertWarningsToExceptions="true"
-		 processIsolation="false"
-		 stopOnFailure="false"
-		 syntaxCheck="false"
-		 bootstrap="vendor/autoload.php">
-	<testsuites>
-		<testsuite name="all">
-			<directory>./tests</directory>
-		</testsuite>
-	</testsuites>
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false"
+         bootstrap="tests/bootstrap.php">
+    <testsuites>
+        <testsuite name="all">
+            <directory>./tests</directory>
+        </testsuite>
+    </testsuites>
 
-	<filter>
-		<whitelist>
-			<directory>src/</directory>
-		</whitelist>
-	</filter>
+    <filter>
+        <whitelist>
+            <directory>src/</directory>
+        </whitelist>
+    </filter>
 
-	<logging>
-		<log type="coverage-html" target="bin/report/" highlight="true" />
-		<log type="tap" target="bin/list.tap" />
-		<log type="json" target="bin/data.json" />
-	</logging>
+    <logging>
+        <log type="coverage-html" target="build/tests/php/coverage" />
+        <log type="coverage-clover" target="build/tests/php/logs/clover.xml" />
+        <log type="junit" target="build/tests/php/logs/junit.xml" />
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false" />
+    </logging>
 </phpunit>

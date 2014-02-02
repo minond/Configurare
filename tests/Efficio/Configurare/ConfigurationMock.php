@@ -16,4 +16,3 @@ class ConfigurationMock extends Configuration
         return $this->decode($str);
     }
 }
-
